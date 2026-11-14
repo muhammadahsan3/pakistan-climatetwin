@@ -50,7 +50,7 @@ Deadline: **30 November 2026**
 - Development finding (leak-free CV, before final tuning): damped persistence CV RMSE 1.520 vs climatology 1.631. No feature set or model variant tried beat damped persistence on the 4-fold average; the best was Ridge + seasonal-persistence interactions (1.521, a tie).
 - [x] Models: Ridge, Random Forest, XGBoost, SVR tuned with leak-free 4-fold CV (`notebooks/05_model_training.ipynb`, `src/models.py`). No selected hyperparameter sits on a grid edge. Best params are in `models/best_params.json`.
 - [x] Temporal test + spatial (leave-one-province-out) evaluation, extreme-heat F1, permutation importance, SHAP (`notebooks/06_model_evaluation.ipynb`). Tables are in `reports/`, figures `ml_*.png` in `research/figures/`. Findings M1–M8 are at the end of notebook 06.
-- [ ] Dashboard
+- [x] Dashboard (`dashboard/`): Streamlit, 4 pages (overview, map & hotspots, forecast & models, scenario explorer). Data packed by `dashboard/prepare_data.py`, including a real Jan 2026 forecast from Ridge + ocean refitted on 2000–2025. All pages pass a headless smoke test.
 - [ ] Paper
 - [ ] Slides
 

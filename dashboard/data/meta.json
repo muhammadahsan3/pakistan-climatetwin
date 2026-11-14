@@ -1,0 +1,21 @@
+{
+  "data_start": "2000-01-01",
+  "data_end": "2025-12-01",
+  "n_districts": 126,
+  "forecast_month": "2026-01-01",
+  "best_model": "Ridge + ocean drivers",
+  "best_test_rmse": 1.6495704177259547,
+  "best_test_skill_vs_clim": 0.11702647841538827,
+  "clim_test_rmse": 1.7554845821241796,
+  "damped_test_rmse": 1.688884385909432,
+  "interval_10_90": [
+    -1.7915497410553263,
+    2.214649573374462
+  ],
+  "phi": 0.30558876331713225,
+  "extreme_threshold_anom": 1.7588372135607715,
+  "climatology_years": [
+    2000,
+    2019
+  ]
+}

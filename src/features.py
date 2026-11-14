@@ -43,6 +43,7 @@ import numpy as np
 import pandas as pd
 
 from src import config as C
+from src import preprocessing as P
 
 TARGET = "target_anom"
 
@@ -62,8 +63,12 @@ FEATURE_GROUPS = {
 FEATURES = [f for g in FEATURE_GROUPS.values() for f in g]
 
 
-def build_features(df: pd.DataFrame) -> pd.DataFrame:
-    """df: processed monthly table from src.preprocessing. Returns one row per (district, target month)."""
+def build_features(df: pd.DataFrame, keep_unlabelled: bool = False) -> pd.DataFrame:
+    """
+    df: processed monthly table from src.preprocessing. Returns one row per (district, target month).
+    keep_unlabelled=True also keeps rows whose target month is not observed yet (the month after
+    the last data month). These are real forecasts, used by the dashboard; their split is "forecast".
+    """
     d = df.sort_values(["district_id", "date"]).copy()
     g = d.groupby("district_id")
 
@@ -91,11 +96,16 @@ def build_features(df: pd.DataFrame) -> pd.DataFrame:
     out["nat_tmax_anom_l0"] = d.groupby("date")["tmax_c_anom"].transform("mean")
 
     # Target: month t+1
-    out["target_date"] = g["date"].shift(-1)
+    out["target_date"] = d["date"] + pd.DateOffset(months=1)
     out[TARGET] = g["tmax_c_anom"].shift(-1)
     out["target_tmax"] = g["tmax_c"].shift(-1)
-    out["target_tmax_clim"] = g["tmax_c_clim"].shift(-1)   # known in advance (training-period average)
-    out["target_season"] = g["season"].shift(-1)
+    # Climatology of the target month: known in advance (training-period average), so it exists
+    # even for a month that has not happened yet.
+    clim = d.groupby(["district_id", "month"])["tmax_c_clim"].first()
+    out["target_tmax_clim"] = clim.reindex(pd.MultiIndex.from_arrays(
+        [out["district_id"], out["target_date"].dt.month])).to_numpy()
+    out["target_season"] = pd.Categorical(out["target_date"].dt.month.map(P.SEASONS),
+                                          categories=P.SEASON_ORDER, ordered=True)
 
     # 5. Seasonality of the TARGET month
     tm = out["target_date"].dt.month
@@ -112,11 +122,12 @@ def build_features(df: pd.DataFrame) -> pd.DataFrame:
 
     # Rows without full history (first 5 months: 6-month window) or without a target (Dec 2025)
     n0 = len(out)
-    out = out.dropna(subset=FEATURES + [TARGET]).reset_index(drop=True)
+    out = out.dropna(subset=FEATURES if keep_unlabelled else FEATURES + [TARGET]).reset_index(drop=True)
     out.attrs["dropped_rows"] = n0 - len(out)
     out["target_year"] = out["target_year"].astype(int)
     out["target_month"] = out["target_month"].astype(int)
     out["split"] = assign_split(out["target_year"])
+    out.loc[out[TARGET].isna(), "split"] = "forecast"
     return out
 
 

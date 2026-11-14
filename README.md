@@ -83,6 +83,20 @@ Open the notebooks in order (`02` → `06`) and run all cells. Each notebook wri
 jupyter lab notebooks
 ```
 
+### 5. Run the digital-twin dashboard
+
+```bash
+python dashboard/prepare_data.py
+```
+
+Packs the results into small files in `dashboard/data/` and refits the best model (Ridge + ocean drivers) on 2000–2025 to make the January 2026 forecast. Re-run it whenever the notebooks change.
+
+```bash
+streamlit run dashboard/app.py
+```
+
+Opens at http://localhost:8501 with four pages: **Overview**, **Climate map & hotspots** (trend maps, district histories), **Forecast & models** (Jan 2026 forecast, model comparison, test-period predictions per district) and **Scenario explorer** (hypothetical +ΔT / rainfall what-ifs for three heat-risk indicators).
+
 ## Boundary data (important)
 
 Pakistan has about 160 **districts**. In the OCHA administrative hierarchy, ADM1 = province,
