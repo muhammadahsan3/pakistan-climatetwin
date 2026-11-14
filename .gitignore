@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+.ipynb_checkpoints/
+
+# Data: keep folders, not the large files
+data/raw/*
+data/processed/*
+data/external/*
+!data/**/.gitkeep
+
+# Trained models
+models/**/*.joblib
+models/**/*.json
+models/**/*.pkl
+!models/.gitkeep
+
+# Secrets - never commit credentials
+.env
+*credentials*.json
+*service-account*.json
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.vscode/
+~$*.docx
+
+# Local editor/tool settings
+.claude/

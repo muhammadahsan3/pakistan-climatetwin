@@ -1,0 +1,37 @@
+# Pakistan ClimateTwin - Python dependencies
+# Install with:  python -m pip install -r requirements.txt
+
+# Google Earth Engine (data acquisition)
+earthengine-api
+
+# Data handling
+numpy
+pandas
+pyarrow            # fast parquet files for the processed dataset
+
+# Geospatial
+geopandas
+shapely
+
+# Statistics / trend tests
+scipy
+pymannkendall      # Mann-Kendall trend test + Sen's slope
+
+# Machine learning
+scikit-learn
+xgboost
+shap
+
+# Visualisation
+matplotlib
+seaborn
+plotly
+folium
+
+# Dashboard
+streamlit
+streamlit-folium
+
+# Notebooks
+jupyter
+ipykernel
