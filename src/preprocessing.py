@@ -97,9 +97,16 @@ def add_time_columns(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def add_anomalies(df: pd.DataFrame, cols: list[str] = CLIMATE_VARS) -> pd.DataFrame:
-    """Add <col>_clim and <col>_anom using a training-period climatology."""
-    y0, y1 = C.CLIMATOLOGY_YEARS
+def add_anomalies(df: pd.DataFrame, cols: list[str] = CLIMATE_VARS,
+                  years: tuple[int, int] | None = None) -> pd.DataFrame:
+    """
+    Add <col>_clim and <col>_anom using a climatology computed from `years`
+    (default: C.CLIMATOLOGY_YEARS = the training years). Existing clim/anom
+    columns are replaced, so this can be re-run with a different period - the
+    cross-validation folds do exactly that (src/models.py).
+    """
+    y0, y1 = years or C.CLIMATOLOGY_YEARS
+    df = df.drop(columns=[f"{c}_clim" for c in cols] + [f"{c}_anom" for c in cols], errors="ignore")
     base = df[df["year"].between(y0, y1)]
     clim = base.groupby(["district_id", "month"])[cols].mean().add_suffix("_clim").reset_index()
     out = df.merge(clim, on=["district_id", "month"], how="left")

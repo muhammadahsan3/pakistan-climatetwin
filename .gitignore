@@ -15,6 +15,8 @@ models/**/*.joblib
 models/**/*.json
 models/**/*.pkl
 !models/.gitkeep
+!models/best_params.json
+!models/best_params_ocean.json
 
 # Secrets - never commit credentials
 .env

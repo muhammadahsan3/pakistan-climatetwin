@@ -13,7 +13,8 @@ Google Earth Engine (ERA5-Land + CHIRPS).
 data/raw/         Earth Engine exports (not committed to git)
 data/processed/   cleaned, feature-engineered dataset
 gee/              Earth Engine extraction scripts
-notebooks/        numbered notebooks: preprocessing -> EDA -> features -> models -> evaluation
+notebooks/        02_preprocessing -> 03_eda -> 04_feature_engineering -> 05_model_training -> 06_model_evaluation -> 07_ocean_drivers
+reports/          result tables (CV results, test metrics, bootstrap CIs, importance, LOPO)
 src/              shared Python code (config.py holds every setting)
 models/           trained models
 dashboard/        Streamlit digital twin
@@ -65,7 +66,22 @@ A one-year sample. Open `data/raw/climate_2000.csv` and sanity-check it: Tmax sh
 python gee/extract_data.py
 ```
 
-The full 2000–2025 run. It can be resumed: years already saved are skipped.
+The full 2000–2025 run.
+
+```bash
+python gee/extract_indices.py
+```
+
+Monthly ENSO (Niño-3.4), IOD (DMI) and tropical SST indices, 1982–2025, from NOAA OISST (used by notebook 07). It can be resumed: years already saved are skipped.
+
+### 4. Run the analysis
+
+Open the notebooks in order (`02` → `06`) and run all cells. Each notebook writes the inputs for the next one.
+`05_model_training` takes about 20 minutes (hyperparameter search) and `06_model_evaluation` about 15 minutes (leave-one-province-out refits).
+
+```bash
+jupyter lab notebooks
+```
 
 ## Boundary data (important)
 
@@ -102,6 +118,8 @@ Static, per district (`districts_static.csv`): province, centroid lat/lon, area,
 - J. Muñoz-Sabater et al., "ERA5-Land: a state-of-the-art global reanalysis dataset for land applications," *Earth Syst. Sci. Data*, vol. 13, pp. 4349–4383, 2021.
 - C. Funk et al., CHIRPS rainfall. **Check the correct citation for CHIRPS v3** on the CHC website; the 2015 *Scientific Data* paper describes v2.
 - T. G. Farr et al., "The Shuttle Radar Topography Mission," *Rev. Geophys.*, vol. 45, 2007.
+- B. Huang et al., "Improvements of the Daily Optimum Interpolation Sea Surface Temperature (DOISST) Version 2.1," *J. Climate*, vol. 34, pp. 2923–2939, 2021 (OISST, used for the ENSO/IOD indices).
+- N. H. Saji et al., "A dipole mode in the tropical Indian Ocean," *Nature*, vol. 401, pp. 360–363, 1999 (definition of the DMI).
 - N. Gorelick et al., "Google Earth Engine: Planetary-scale geospatial analysis for everyone," *Remote Sens. Environ.*, vol. 202, pp. 18–27, 2017.
 - Boundary dataset: whichever you choose (geoBoundaries or OCHA/HDX). Cite its version.
 
