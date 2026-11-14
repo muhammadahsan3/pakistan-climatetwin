@@ -51,8 +51,10 @@ Deadline: **30 November 2026**
 - [x] Models: Ridge, Random Forest, XGBoost, SVR tuned with leak-free 4-fold CV (`notebooks/05_model_training.ipynb`, `src/models.py`). No selected hyperparameter sits on a grid edge. Best params are in `models/best_params.json`.
 - [x] Temporal test + spatial (leave-one-province-out) evaluation, extreme-heat F1, permutation importance, SHAP (`notebooks/06_model_evaluation.ipynb`). Tables are in `reports/`, figures `ml_*.png` in `research/figures/`. Findings M1–M8 are at the end of notebook 06.
 - [x] Dashboard (`dashboard/`): Streamlit, 4 pages (overview, map & hotspots, forecast & models, scenario explorer). Data packed by `dashboard/prepare_data.py`, including a real Jan 2026 forecast from Ridge + ocean refitted on 2000–2025. All pages pass a headless smoke test.
-- [ ] Paper
-- [ ] Slides
+- [x] Paper draft: `research/paper/main.tex` (IEEE, 29 verified references) → `release/paper_overleaf.zip`. Team to add names, own Related Work and wording.
+- [x] Slides draft: 16-slide slide deck with speaker notes. Team to add names and links.
+- [x] Dataset package: `release/ClimateTwin_dataset.zip` + `data/DATA_README.md`. Upload and link.
+- See `SUBMISSION.md` for the final checklist and viva preparation.
 
 ## 4. Key EDA findings (full text: end of `notebooks/03_eda.ipynb`)
 
