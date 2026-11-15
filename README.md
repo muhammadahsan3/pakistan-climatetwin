@@ -97,6 +97,28 @@ streamlit run dashboard/app.py
 
 Opens at http://localhost:8501 with four pages: **Overview**, **Climate map & hotspots** (trend maps, district histories), **Forecast & models** (Jan 2026 forecast, model comparison, test-period predictions per district) and **Scenario explorer** (hypothetical +ΔT / rainfall what-ifs for three heat-risk indicators).
 
+### 6. Deploy the dashboard online (free, Streamlit Community Cloud)
+
+The dashboard needs only `dashboard/`, `dashboard/data/` (pre-computed, committed) and `.streamlit/config.toml`.
+`dashboard/requirements.txt` lists its 5 packages; the online server installs only those.
+
+1. **Put the project on GitHub.** Create an empty repository at https://github.com/new (e.g. `pakistan-climatetwin`; don't add a README), then push:
+   ```bash
+   git remote add origin https://github.com/<your-username>/pakistan-climatetwin.git
+   ```
+   ```bash
+   git push -u origin master
+   ```
+2. Go to https://share.streamlit.io and **sign in with GitHub**.
+3. **Create app → Deploy a public app from GitHub**:
+   - Repository: `<your-username>/pakistan-climatetwin`, branch `master`
+   - Main file path: `dashboard/app.py`
+   - App URL: choose a name, e.g. `pakistan-climatetwin`
+   - Advanced settings → Python version **3.12** (or newer)
+4. Click **Deploy**. The first build takes 2–4 minutes. The app then lives at `https://<name>.streamlit.app`.
+
+Every later `git push` to `master` redeploys automatically. If you change the analysis, re-run `python dashboard/prepare_data.py` and commit `dashboard/data/` before pushing.
+
 ## Boundary data (important)
 
 Pakistan has about 160 **districts**. In the OCHA administrative hierarchy, ADM1 = province,

@@ -1,0 +1,8 @@
+# Dependencies for the deployed dashboard only (Streamlit Community Cloud reads the
+# requirements.txt next to the app's entry file). The full analysis environment is
+# in the project-root requirements.txt.
+streamlit==1.67.0
+pandas==3.1.1
+numpy==2.5.4
+plotly==7.1.0
+pyarrow==26.0.1
