@@ -60,5 +60,7 @@ for col, (title, body) in zip(steps, [
         ("4 · Explore", "Interactive maps, district histories, forecasts with error bands, and **what-if** heat-risk scenarios.")]):
     col.markdown(f"**{title}**\n\n{body}")
 
-cm.caveat(f"Research prototype. ERA5-Land is a reanalysis (model + observations), not station data. Data {meta['data_start'][:7]} to "
-          f"{meta['data_end'][:7]}. Forecasts are one-month-ahead statistical predictions, not climate projections.")
+cm.caveat(f"Research prototype. ERA5-Land is a reanalysis (model + observations), not station data. Trends use {meta['data_start'][:4]}–"
+          f"{meta['data_end'][:4]}; live data through {cm.latest_data_month():%B %Y}"
+          + (f" (last update {meta['updated_at']})" if "updated_at" in meta else "")
+          + ". Forecasts are one-month-ahead statistical predictions, not climate projections.")

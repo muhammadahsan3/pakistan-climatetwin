@@ -20,5 +20,7 @@ pages = st.navigation([
     st.Page("views/scenario.py", title="Scenario explorer", icon=":material/tune:"),
 ])
 with st.sidebar:
-    st.caption("Pakistan ClimateTwin · research prototype\n\nData: ERA5-Land, CHIRPS v3, NOAA OISST via Google Earth Engine · 126 districts · 2000–2025")
+    import common as cm
+    st.caption("Pakistan ClimateTwin · research prototype\n\nData: ERA5-Land, CHIRPS v3, NOAA OISST via Google Earth Engine · "
+               f"126 districts · 2000–2025 + live updates through {cm.latest_data_month():%b %Y}")
 pages.run()

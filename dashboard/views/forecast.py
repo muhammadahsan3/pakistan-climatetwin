@@ -8,15 +8,22 @@ import common as cm
 meta = cm.meta()
 fc = cm.forecast()
 pred = cm.predictions()
-m = cm.monthly()
+m = cm.anomalies_with_live()
+ver = cm.verification()
 fmonth = pd.Timestamp(meta["forecast_month"])
+dend = cm.latest_data_month()
 lo, hi = meta["interval_10_90"]
 
 st.title("Forecast & model comparison")
 st.markdown(f"One-month-ahead forecasts of the **Tmax anomaly** (departure from the district's 2000–2019 average for that month). "
-            f"Best configuration: **{meta['best_model']}**, refitted on all data up to {pd.Timestamp(meta['data_end']):%B %Y}.")
+            f"Best configuration: **{meta['best_model']}**, trained on 2000–2025. Latest data: **{dend:%B %Y}**"
+            + (f" · updated {meta['updated_at']}" if "updated_at" in meta else "") + ".")
 
-tab1, tab2, tab3 = st.tabs([f"Forecast for {fmonth:%B %Y}", "How good are the models?", "Test period, district by district"])
+tabs = [f"Forecast for {fmonth:%B %Y}"] + (["Live check 2026 (unseen months)"] if ver is not None else []) + \
+       ["How good are the models?", "Test period, district by district"]
+tab1, *rest = st.tabs(tabs)
+tab_live = rest.pop(0) if ver is not None else None
+tab2, tab3 = rest
 
 # ---------------------------------------------------------------------------------------------
 with tab1:
@@ -26,7 +33,7 @@ with tab1:
     show["80% range (°C)"] = show.apply(lambda r: f"{r.pred_tmax_lo:.1f} to {r.pred_tmax_hi:.1f}", axis=1)
     k = st.columns(4)
     k[0].metric("National mean forecast anomaly", f"{fc['pred_anom'].mean():+.2f} °C")
-    k[1].metric(f"Observed anomaly, {pd.Timestamp(meta['data_end']):%b %Y}", f"{fc['tmax_anom_l0'].mean():+.2f} °C",
+    k[1].metric(f"Observed anomaly, {dend:%b %Y}", f"{fc['tmax_anom_l0'].mean():+.2f} °C",
                 help="The latest month the forecast is based on")
     k[2].metric("Districts forecast warmer than normal", f"{int((fc['pred_anom'] > 0).sum())} / {len(fc)}")
     k[3].metric("Typical error (test RMSE)", f"± {meta['best_test_rmse']:.2f} °C")
@@ -63,7 +70,44 @@ with tab1:
         st.plotly_chart(cm.layout(fig, 330, title="Last 12 months and next-month forecast (anomaly)", yaxis_title="°C"),
                         width="stretch")
     cm.caveat("The forecast is cautious by design. With weak month-to-month predictability, the best estimate stays close to normal, "
-              "and the error band is wide. It is a statistical one-month outlook, not a weather forecast or a climate projection.")
+              "and the error band is wide. It is a statistical one-month outlook, not a weather forecast or a climate projection."
+              + (f" Rainfall after {pd.Timestamp(meta['chirps_data_end']):%B %Y} is estimated from bias-corrected ERA5-Land until CHIRPS publishes it."
+                 if "chirps_data_end" in meta else ""))
+
+# ---------------------------------------------------------------------------------------------
+if tab_live is not None:
+    with tab_live:
+        s = meta.get("live_verification", {})
+        st.markdown(f"Every month since January 2026 the twin re-issues the forecast it would have made with the data available at the time, "
+                    f"then compares it with what ERA5-Land observed. **None of these {s.get('months', 0)} months were used to train or tune the model**, "
+                    "so this is a genuine out-of-sample test that grows by one month with every update.")
+        k = st.columns(4)
+        k[0].metric("Months verified", f"{s.get('months', 0)}")
+        k[1].metric("Model RMSE", f"{s.get('rmse_model', float('nan')):.2f} °C")
+        k[2].metric("Skill vs climatology", f"{s.get('skill_vs_clim', float('nan')):+.1%}",
+                    help=f"Climatology RMSE {s.get('rmse_clim', float('nan')):.2f} °C")
+        k[3].metric("Skill vs damped persistence", f"{s.get('skill_vs_damped', float('nan')):+.1%}",
+                    help=f"Damped-persistence RMSE {s.get('rmse_damped', float('nan')):.2f} °C")
+        nat = ver.groupby("target_date")[["target_anom", "pred_anom", "damped_anom"]].mean()
+        fig = go.Figure()
+        fig.add_bar(x=nat.index, y=nat["target_anom"], name="Observed", marker_color=[cm.RED if v > 0 else cm.BLUE for v in nat["target_anom"]],
+                    hovertemplate="%{x|%b %Y}: %{y:+.2f} °C")
+        fig.add_scatter(x=nat.index, y=nat["pred_anom"], name=meta["best_model"], mode="lines+markers",
+                        line=dict(color=cm.INK_2, width=2.5), marker=dict(size=8, symbol="diamond"), hovertemplate="%{y:+.2f} °C")
+        fig.add_scatter(x=nat.index, y=nat["damped_anom"], name="Damped persistence", mode="lines+markers",
+                        line=dict(color=cm.MUTED, width=1.5, dash="dot"), hovertemplate="%{y:+.2f} °C")
+        fig.add_hline(y=0, line_color=cm.MUTED, line_width=1)
+        st.plotly_chart(cm.layout(fig, 380, title="National mean Tmax anomaly: forecast one month ahead vs observed", yaxis_title="°C"),
+                        width="stretch")
+        per = ver.assign(err_m=(ver["pred_anom"] - ver["target_anom"]) ** 2, err_c=ver["target_anom"] ** 2) \
+                 .groupby("target_date")[["err_m", "err_c"]].mean() ** 0.5
+        per.index = per.index.strftime("%b %Y")
+        per.columns = ["Model RMSE (°C)", "Climatology RMSE (°C)"]
+        per["Model better?"] = np.where(per["Model RMSE (°C)"] < per["Climatology RMSE (°C)"], "yes", "no")
+        per.index.name = "Month"
+        st.dataframe(per.round(2), width="stretch")
+        cm.caveat("Months with sudden heat waves or cold spells (e.g. a very warm February 2026) are missed by every method: "
+                  "one-month-ahead skill comes from persistence and slow drivers, not from weather events.")
 
 # ---------------------------------------------------------------------------------------------
 with tab2:

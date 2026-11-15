@@ -2,7 +2,7 @@
   "data_start": "2000-01-01",
   "data_end": "2025-12-01",
   "n_districts": 126,
-  "forecast_month": "2026-01-01",
+  "forecast_month": "2026-11-01",
   "best_model": "Ridge + ocean drivers",
   "best_test_rmse": 1.6495704177259547,
   "best_test_skill_vs_clim": 0.11702647841538827,
@@ -17,5 +17,16 @@
   "climatology_years": [
     2000,
     2019
-  ]
+  ],
+  "live_data_end": "2026-10-01",
+  "chirps_data_end": "2026-09-01",
+  "updated_at": "2026-11-15 12:08 UTC",
+  "live_verification": {
+    "months": 10,
+    "rmse_model": 1.516889220045715,
+    "rmse_damped": 1.5939325924622294,
+    "rmse_clim": 1.6436058504710318,
+    "skill_vs_clim": 0.14824954742355267,
+    "skill_vs_damped": 0.09433449267342331
+  }
 }

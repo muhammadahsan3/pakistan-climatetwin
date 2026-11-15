@@ -86,7 +86,8 @@ def run_check() -> None:
     print(f"Mean Nino-3.4 SST in Dec 2015 (strong El Nino; expect about 29 C): {v}")
 
 
-def extract(band: str, scale: float) -> pd.DataFrame:
+def extract(band: str, scale: float, months: list[list[int]] | None = None) -> pd.DataFrame:
+    """Monthly mean SST of each box. `months` = [[year, month], ...]; default: FIRST_YEAR..END_YEAR."""
     def one_month(ym):
         ym = ee.List(ym)
         start = ee.Date.fromYMD(ym.get(0), ym.get(1), 1)
@@ -99,7 +100,7 @@ def extract(band: str, scale: float) -> pd.DataFrame:
 
     rows = []
     # Small requests (6 months x 4 boxes): larger ones hit "Too many concurrent aggregations"
-    all_months = [[y, m] for y in range(FIRST_YEAR, C.END_YEAR + 1) for m in range(1, 13)]
+    all_months = months or [[y, m] for y in range(FIRST_YEAR, C.END_YEAR + 1) for m in range(1, 13)]
     CH = 6
     for i in range(0, len(all_months), CH):
         chunk = ee.List(all_months[i:i + CH])

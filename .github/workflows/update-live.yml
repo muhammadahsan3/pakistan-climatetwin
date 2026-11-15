@@ -1,0 +1,58 @@
+# Keeps the Pakistan ClimateTwin up to date.
+#
+# Twice a month it downloads the newest complete months from Google Earth Engine, makes the
+# next-month forecast, extends the live verification, and commits the new dashboard data.
+# Streamlit Community Cloud redeploys automatically after the push.
+#
+# One-time setup (README section 7): add two repository secrets
+#   EE_SERVICE_ACCOUNT_KEY  - the full JSON key of a Google Cloud service account
+#                             registered for Earth Engine
+#   EE_PROJECT              - the Cloud project id (e.g. pakistan-climatetwin)
+
+name: Live data update
+
+on:
+  schedule:
+    - cron: "0 6 8,22 * *"      # 06:00 UTC on the 8th and 22nd (ERA5-Land lags ~5 days)
+  workflow_dispatch: {}          # "Run workflow" button in the Actions tab
+
+permissions:
+  contents: write
+
+concurrency:
+  group: live-update
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r dashboard/requirements.txt earthengine-api==1.7.52 scikit-learn==1.9.1
+
+      - name: Run live update
+        env:
+          EE_SERVICE_ACCOUNT_KEY: ${{ secrets.EE_SERVICE_ACCOUNT_KEY }}
+          EE_PROJECT: ${{ secrets.EE_PROJECT }}
+        run: python gee/update_live.py
+
+      - name: Commit new data (if anything changed)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add dashboard/data
+          if git diff --cached --quiet; then
+            echo "No new data."
+          else
+            git commit -m "Live data update $(date -u +%Y-%m-%d)"
+            git push
+          fi

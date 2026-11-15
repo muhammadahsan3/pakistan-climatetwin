@@ -77,6 +77,16 @@ def init_ee(project: str | None) -> None:
     if not project:
         sys.exit("No Earth Engine project given. Use --project, set EE_PROJECT, "
                  "or edit EE_PROJECT in src/config.py.")
+    # Automated runs (GitHub Actions): a service-account key passed as an environment variable.
+    # The key itself is never stored in the repository.
+    key_json = os.environ.get("EE_SERVICE_ACCOUNT_KEY")
+    if key_json:
+        info = json.loads(key_json)
+        credentials = ee.ServiceAccountCredentials(info["client_email"], key_data=key_json)
+        ee.Initialize(credentials, project=project)
+        print(f"Earth Engine initialised with a service account (project: {project})")
+        return
+
     creds = Path.home() / ".config" / "earthengine" / "credentials"
     if not creds.exists():
         print("Not authenticated yet - opening the Google sign-in flow ...")

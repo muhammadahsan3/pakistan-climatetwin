@@ -74,6 +74,15 @@ def main() -> None:
             "tmax_c_anom", "tmin_c_anom", "rain_mm_anom"]
     m = monthly[keep].copy()
     m.to_parquet(OUT / "monthly.parquet", index=False)
+
+    # Inputs for the live updater (gee/update_live.py), which runs on GitHub Actions where
+    # data/raw and data/processed are not available: the raw 2000-2025 history, the raw ocean
+    # boxes and the tuned hyperparameters.
+    hist_cols = ["district_id", "district", "province", "elevation_m", "lat", "lon", "year", "month",
+                 "tmax_c", "tmin_c", "tmean_c", "rain_mm", "era5_rain_mm", "soil_moisture", "solar_mj"]
+    monthly[hist_cols].to_parquet(OUT / "history.parquet", index=False)
+    shutil.copy(C.DATA_RAW / "sst_boxes_raw.csv", OUT / "sst_boxes_raw.csv")
+    shutil.copy(C.MODELS_DIR / "best_params_ocean.json", OUT / "best_params_ocean.json")
     clim = monthly[monthly["year"].between(*C.CLIMATOLOGY_YEARS)].groupby(["district_id", "month"]).agg(
         tmax_clim=("tmax_c", "mean"), tmin_clim=("tmin_c", "mean"), rain_clim=("rain_mm", "mean"),
         rain_p20=("rain_mm", lambda s: s.quantile(.2))).reset_index()

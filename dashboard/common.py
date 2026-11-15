@@ -67,6 +67,43 @@ def meta() -> dict:
     return json.load(open(DATA / "meta.json"))
 
 
+@st.cache_data
+def live_monthly() -> pd.DataFrame | None:
+    """Months after the 2000-2025 study period, added by gee/update_live.py (None if not run yet)."""
+    f = DATA / "live_monthly.parquet"
+    return pd.read_parquet(f) if f.exists() else None
+
+
+@st.cache_data
+def verification() -> pd.DataFrame | None:
+    """Forecasts re-issued for each live month vs what happened (None if not run yet)."""
+    f = DATA / "verification.parquet"
+    return pd.read_parquet(f) if f.exists() else None
+
+
+def latest_data_month() -> pd.Timestamp:
+    m = meta()
+    return pd.Timestamp(m.get("live_data_end", m["data_end"]))
+
+
+def anomalies_with_live() -> pd.DataFrame:
+    """District monthly Tmax anomalies 2000-2025 plus live months (for recent-history charts)."""
+    hist = monthly()[["district_id", "date", "tmax_c_anom"]]
+    lv = live_monthly()
+    if lv is None:
+        return hist
+    ver = verification()
+    if ver is None:
+        return hist
+    # live anomalies are the verification targets (same 2000-2019 climatology); add the last month too
+    fc = forecast()
+    last = fc[["district_id", "input_date", "tmax_anom_l0"]].rename(columns={"input_date": "date", "tmax_anom_l0": "tmax_c_anom"})
+    v = ver[["district_id", "target_date", "target_anom"]].rename(columns={"target_date": "date", "target_anom": "tmax_c_anom"})
+    out = pd.concat([hist, v, last], ignore_index=True)
+    out["date"] = pd.to_datetime(out["date"])
+    return out.drop_duplicates(["district_id", "date"], keep="last").sort_values(["district_id", "date"])
+
+
 def district_lookup() -> dict[str, str]:
     """'District (Province)' label -> district_id, sorted by name."""
     d = districts().sort_values("district")

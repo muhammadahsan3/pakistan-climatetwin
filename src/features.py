@@ -144,8 +144,9 @@ OCEAN_GROUPS = {
 OCEAN_FEATURES = [f for g in OCEAN_GROUPS.values() for f in g]
 
 
-def load_indices() -> pd.DataFrame:
-    idx = pd.read_csv(C.DATA_RAW / "climate_indices.csv")
+def load_indices(idx: pd.DataFrame | None = None) -> pd.DataFrame:
+    """Index features (value at t and 3-month mean). `idx`: a climate_indices table; default: the saved CSV."""
+    idx = pd.read_csv(C.DATA_RAW / "climate_indices.csv") if idx is None else idx.copy()
     idx["date"] = pd.to_datetime(dict(year=idx["year"], month=idx["month"], day=1))
     idx = idx.sort_values("date").set_index("date")
     for k in ["nino34", "dmi", "trop_sst"]:

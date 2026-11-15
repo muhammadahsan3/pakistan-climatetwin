@@ -119,6 +119,34 @@ The dashboard needs only `dashboard/`, `dashboard/data/` (pre-computed, committe
 
 Every later `git push` to `master` redeploys automatically. If you change the analysis, re-run `python dashboard/prepare_data.py` and commit `dashboard/data/` before pushing.
 
+### 7. Live updates (the twin keeps itself current)
+
+`gee/update_live.py` downloads every complete month after 2025 from Earth Engine, forecasts the next month,
+and re-issues the forecast for every 2026 month to compare with what actually happened (**live verification on
+months the model never saw**). Run it locally any time, after `prepare_data.py`:
+
+```bash
+python gee/update_live.py
+```
+
+- ERA5-Land and OISST appear about 5 days after a month ends. CHIRPS rainfall appears about 6 weeks later; until then the
+  month's rainfall is estimated from ERA5-Land, scaled to CHIRPS's 2000–2019 averages per district and month (flagged in the data).
+- The model is fixed: Ridge + ocean drivers, trained on 2000–2025, so the verification months stay unseen.
+
+**Automatic updates (GitHub Actions, free).** `.github/workflows/update-live.yml` runs the script on the 8th and 22nd
+of every month and pushes the new data; Streamlit Cloud then redeploys by itself. One-time setup:
+
+1. **Create a service account** (a robot login for Earth Engine): https://console.cloud.google.com → project
+   `pakistan-climatetwin` → **IAM & Admin → Service Accounts → Create service account**. Name it e.g. `climatetwin-updater`,
+   and grant the roles **Earth Engine Resource Viewer** and **Service Usage Consumer**.
+2. Open the new account → **Keys → Add key → Create new key → JSON**. A `.json` file downloads.
+   **Keep it secret and outside the project folder; never commit it.**
+3. On GitHub: repository → **Settings → Secrets and variables → Actions → New repository secret**:
+   - `EE_SERVICE_ACCOUNT_KEY`: paste the **entire contents** of the JSON file
+   - `EE_PROJECT`: `pakistan-climatetwin`
+4. **Actions** tab → **Live data update → Run workflow**. After about 3 minutes it should be green, with a new commit
+   "Live data update …" and an updated dashboard.
+
 ## Boundary data (important)
 
 Pakistan has about 160 **districts**. In the OCHA administrative hierarchy, ADM1 = province,

@@ -55,6 +55,9 @@ Deadline: **30 November 2026**
 - [x] Slides draft: 16-slide slide deck with speaker notes. Team to add names and links.
 - [x] Dataset package: `release/ClimateTwin_dataset.zip` + `data/DATA_README.md`. Upload and link.
 - See `SUBMISSION.md` for the final checklist and viva preparation.
+- [x] Live digital twin (`gee/update_live.py`, `.github/workflows/update-live.yml`): data through Oct 2026, forecast for Nov 2026.
+  Live verification Jan–Oct 2026 (10 unseen months): RMSE 1.52 °C vs climatology 1.64 and damped persistence 1.59, i.e. **skill +14.8% vs climatology, +9.4% vs damped persistence**.
+  Worth adding to the paper and slides as an out-of-sample result.
 
 ## 4. Key EDA findings (full text: end of `notebooks/03_eda.ipynb`)
 

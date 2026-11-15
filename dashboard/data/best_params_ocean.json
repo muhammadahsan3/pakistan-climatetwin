@@ -1,0 +1,23 @@
+{
+  "Ridge": {
+    "model__alpha": 10000.0
+  },
+  "Random Forest": {
+    "max_depth": null,
+    "max_features": 0.4,
+    "min_samples_leaf": 1000
+  },
+  "XGBoost": {
+    "colsample_bytree": 0.31273937997981016,
+    "learning_rate": 0.046125236243355884,
+    "max_depth": 1,
+    "min_child_weight": 1885,
+    "reg_lambda": 886.2326508576241,
+    "subsample": 0.8861223846483287
+  },
+  "SVR": {
+    "model__C": 0.1,
+    "model__epsilon": 0.5,
+    "model__gamma": 0.01
+  }
+}
